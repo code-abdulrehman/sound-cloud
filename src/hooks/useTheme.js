@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
 export const useTheme = () => {
-  const [currentColor, setCurrentColor] = useState(localStorage.getItem('selectedColor') ||'purple')
+  const [currentColor, setCurrentColor] = useState('purple')
 
   // Color RGB values for CSS custom properties
   const colorValues = {

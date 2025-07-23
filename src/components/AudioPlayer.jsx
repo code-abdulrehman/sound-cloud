@@ -27,19 +27,25 @@ const AudioPlayer = () => {
   const [hasSetInitialTime, setHasSetInitialTime] = useState(false)
   const [audioError, setAudioError] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [lastLoadedUrl, setLastLoadedUrl] = useState('')
 
   // Audio event handlers
   useEffect(() => {
     const audio = audioRef.current
     if (!audio || !currentTrack) return
 
-    // Clear previous errors when loading new track
-    setAudioError(null)
-    setIsLoading(true)
+    // Check if this is actually a new track by comparing URLs
+    const isNewTrack = audio.src !== currentTrack.url && lastLoadedUrl !== currentTrack.url
+    
+    if (isNewTrack) {
+      setAudioError(null)
+      setIsLoading(true)
+    }
 
     const handleLoadedMetadata = () => {
       setDuration(audio.duration)
       setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
       
       // Set saved time only once when the track loads
       if (isLoaded && !hasSetInitialTime) {
@@ -61,10 +67,6 @@ const AudioPlayer = () => {
       if (!audio.seeking) {
         setCurrentTime(audio.currentTime)
       }
-      // Ensure loading is cleared when audio is playing
-      if (isLoading && audio.currentTime > 0) {
-        setIsLoading(false)
-      }
     }
 
     const handleEnded = () => {
@@ -77,6 +79,7 @@ const AudioPlayer = () => {
       // Set volume from saved state
       audio.volume = volume
       setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
       
       // If the component loads with a saved time and it hasn't been set yet, set it
       if (isLoaded && !hasSetInitialTime) {
@@ -93,9 +96,12 @@ const AudioPlayer = () => {
     }
 
     const handleLoadStart = () => {
-      setHasSetInitialTime(false)
-      setIsLoading(true)
-      setAudioError(null)
+      // Only show loading for genuinely new tracks
+      if (isNewTrack) {
+        setHasSetInitialTime(false)
+        setIsLoading(true)
+        setAudioError(null)
+      }
     }
 
     const handleError = (e) => {
@@ -107,21 +113,35 @@ const AudioPlayer = () => {
 
     const handleLoadedData = () => {
       setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
     }
 
     const handlePlaying = () => {
       // Audio is actually playing, clear loading state
       setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
     }
 
     const handleWaiting = () => {
-      // Audio is buffering
-      setIsLoading(true)
+      // Only show loading if this is genuinely a new track
+      if (isNewTrack) {
+        setIsLoading(true)
+      }
     }
 
     const handleCanPlayThrough = () => {
       // Audio can play through without buffering
       setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
+    }
+
+    // If the audio is already loaded and ready, don't show loading
+    if (audio.readyState >= 1 && audio.src === currentTrack.url) {
+      setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
+      if (audio.duration) {
+        setDuration(audio.duration)
+      }
     }
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata)
@@ -147,12 +167,14 @@ const AudioPlayer = () => {
       audio.removeEventListener('waiting', handleWaiting)
       audio.removeEventListener('canplaythrough', handleCanPlayThrough)
     }
-  }, [currentTrack, isLoaded, hasSetInitialTime, volume, setCurrentTime, setDuration, setIsPlaying, isLoading])
+  }, [currentTrack, isLoaded, hasSetInitialTime, volume, setCurrentTime, setDuration, setIsPlaying, lastLoadedUrl])
 
   // Reset hasSetInitialTime when track changes
   useEffect(() => {
-    setHasSetInitialTime(false)
-  }, [currentTrack])
+    if (currentTrack && lastLoadedUrl !== currentTrack.url) {
+      setHasSetInitialTime(false)
+    }
+  }, [currentTrack, lastLoadedUrl])
 
   // Play/pause effect
   useEffect(() => {
@@ -160,12 +182,13 @@ const AudioPlayer = () => {
     if (!audio || !currentTrack || audioError) return
 
     if (isPlaying) {
-      // Small delay to ensure audio is ready
+      // Don't show loading when just resuming playback
       const playPromise = audio.play()
       if (playPromise !== undefined) {
         playPromise.then(() => {
-          // Successfully started playing
+          // Successfully started playing - clear any lingering loading state
           setIsLoading(false)
+          setLastLoadedUrl(currentTrack.url)
         }).catch(error => {
           console.error('Error playing audio:', error)
           setIsPlaying(false)
@@ -175,7 +198,7 @@ const AudioPlayer = () => {
       }
     } else {
       audio.pause()
-      setIsLoading(false)
+      // Don't set loading when just pausing
     }
   }, [isPlaying, currentTrack, audioError, setIsPlaying])
 
@@ -227,8 +250,8 @@ const AudioPlayer = () => {
 
   const progressPercent = duration ? (currentTime / duration) * 100 : 0
   
-  // Show loading only when we're actually loading, not when playing
-  const showLoading = isLoading && !isPlaying
+  // Show loading only when genuinely loading a new track
+  const showLoading = isLoading && (!lastLoadedUrl || lastLoadedUrl !== currentTrack.url)
 
   return (
     <>

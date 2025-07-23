@@ -3,7 +3,7 @@ import { FaPalette, FaTimes } from 'react-icons/fa'
 
 const ColorSwitcher = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const [selectedColor, setSelectedColor] = useState('teal')
+  const [selectedColor, setSelectedColor] = useState('purple')
 
   const colors = [
     { name: 'emerald', displayName: 'Emerald', preview: 'bg-emerald-500' },

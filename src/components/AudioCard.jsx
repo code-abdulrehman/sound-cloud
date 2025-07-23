@@ -9,6 +9,27 @@ const AudioCard = ({ track }) => {
   const isCurrentTrack = currentTrack?.id === track.id
 
   const formatDuration = (duration) => {
+    // If duration is already in MM:SS format, return as is
+    if (typeof duration === 'string' && duration.includes(':')) {
+      return duration
+    }
+    
+    // If duration is in seconds, convert to MM:SS
+    if (typeof duration === 'number') {
+      const minutes = Math.floor(duration / 60)
+      const seconds = Math.floor(duration % 60)
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+    
+    // If it's a string that might be seconds
+    const numDuration = parseFloat(duration)
+    if (!isNaN(numDuration)) {
+      const minutes = Math.floor(numDuration / 60)
+      const seconds = Math.floor(numDuration % 60)
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+    
+    // Return as is if we can't parse it
     return duration
   }
 
@@ -17,6 +38,9 @@ const AudioCard = ({ track }) => {
     background: `rgb(var(--current-color-900, 88 28 135) / 0.3)`
   } : {}
 
+  const hoverOverlayStyle = {
+    background: `linear-gradient(to right, rgb(var(--current-color-600, 147 51 234) / 0.1), rgb(219 39 119 / 0.1))`
+  }
 
   return (
     <div className={`group relative bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 transition-all duration-300 hover:bg-gray-700/60 hover:scale-105 hover:shadow-xl border border-gray-700/50 ${isCurrentTrack ? `${colorClasses.border.ring} ring-2` : ''}`} style={currentTrackStyle}>
@@ -58,7 +82,7 @@ const AudioCard = ({ track }) => {
       </div>
       
       {/* Hover overlay */}
-      <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none drop-blur-sm"></div>
+      <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={hoverOverlayStyle}></div>
     </div>
   )
 }
