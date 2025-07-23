@@ -12,9 +12,17 @@ const AudioCard = ({ track }) => {
     return duration
   }
 
+  // Inline styles for dynamic classes that might not work in production
+  const currentTrackStyle = isCurrentTrack ? {
+    background: `rgb(var(--current-color-900, 88 28 135) / 0.3)`
+  } : {}
+
+  const hoverOverlayStyle = {
+    background: `linear-gradient(to right, rgb(var(--current-color-600, 147 51 234) / 0.1), rgb(219 39 119 / 0.1))`
+  }
 
   return (
-    <div className={`group relative bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 transition-all duration-300 hover:bg-gray-700/60 hover:scale-105 hover:shadow-xl border border-gray-700/50 ${isCurrentTrack ? `${colorClasses.border.ring} ring-2 bg-${currentColor}-900/30` : ''}`}>
+    <div className={`group relative bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 transition-all duration-300 hover:bg-gray-700/60 hover:scale-105 hover:shadow-xl border border-gray-700/50 ${isCurrentTrack ? `${colorClasses.border.ring} ring-2` : ''}`} style={currentTrackStyle}>
       <div className="flex items-center justify-between" data-meta={track.discription}>
         <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap w-[60%]">
           <h3 className={`font-semibold text-lg mb-1 overflow-hidden text-ellipsis whitespace-nowrap w-[60%] ${isCurrentTrack ? colorClasses.text.primaryLight : 'text-white'}`}>
@@ -53,7 +61,7 @@ const AudioCard = ({ track }) => {
       </div>
       
       {/* Hover overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-r from-${currentColor}-600/10 to-pink-600/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`}></div>
+      <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={hoverOverlayStyle}></div>
     </div>
   )
 }

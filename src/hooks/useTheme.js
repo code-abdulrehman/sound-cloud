@@ -1,7 +1,22 @@
 import { useState, useEffect } from 'react'
 
 export const useTheme = () => {
-  const [currentColor, setCurrentColor] = useState(localStorage.getItem('selectedColor') || 'teal')
+  const [currentColor, setCurrentColor] = useState('purple')
+
+  // Color RGB values for CSS custom properties
+  const colorValues = {
+    purple: { 600: '147 51 234', 900: '88 28 135' },
+    emerald: { 600: '5 150 105', 900: '6 78 59' },
+    teal: { 600: '13 148 136', 900: '19 78 74' },
+    rose: { 600: '225 29 72', 900: '136 19 55' },
+    orange: { 600: '234 88 12', 900: '154 52 18' },
+    yellow: { 600: '202 138 4', 900: '113 63 18' },
+    blue: { 600: '37 99 235', 900: '30 58 138' },
+    slate: { 600: '71 85 105', 900: '15 23 42' },
+    pink: { 600: '219 39 119', 900: '131 24 67' },
+    stone: { 600: '87 83 78', 900: '28 25 23' },
+    red: { 600: '220 38 38', 900: '127 29 29' }
+  }
 
   useEffect(() => {
     // Load saved color from localStorage
@@ -10,7 +25,7 @@ export const useTheme = () => {
       setCurrentColor(savedColor)
     }
     else {
-      setCurrentColor('teal')
+      setCurrentColor('purple')
     }
 
     // Listen for color changes from ColorSwitcher
@@ -24,6 +39,19 @@ export const useTheme = () => {
       window.removeEventListener('colorChanged', handleColorChange)
     }
   }, [])
+
+  // Update CSS custom properties when color changes
+  useEffect(() => {
+    const colorValue = colorValues[currentColor] || colorValues.purple
+    const root = document.documentElement
+    
+    root.style.setProperty('--primary-color-600', colorValue[600])
+    root.style.setProperty('--primary-color-900', colorValue[900])
+    
+    // Also set individual color values for dynamic usage
+    root.style.setProperty('--current-color-600', `rgb(${colorValue[600]})`)
+    root.style.setProperty('--current-color-900', `rgb(${colorValue[900]})`)
+  }, [currentColor, colorValues])
 
   // Color class mappings for each color
   const colorMappings = {
