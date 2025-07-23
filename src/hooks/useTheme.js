@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 
 export const useTheme = () => {
-  const [currentColor, setCurrentColor] = useState(localStorage.getItem('selectedColor') || 'teal')
+  const [currentColor, setCurrentColor] = useState('purple')
 
   useEffect(() => {
     // Load saved color from localStorage
@@ -45,7 +45,8 @@ export const useTheme = () => {
         primary: 'shadow-purple-500/50',
       },
       hover: {
-        bg: 'hover:bg-purple-600/10',
+        bg: 'hover:bg-purple-600',
+        bgLight: 'hover:bg-purple-600/10',
         text: 'hover:text-purple-300',
         shadow: 'hover:shadow-purple-500/50',
       }
@@ -72,6 +73,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-emerald-600',
+        bgLight: 'hover:bg-emerald-600/10',
         text: 'hover:text-emerald-300',
         shadow: 'hover:shadow-emerald-500/50',
       }
@@ -98,6 +100,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-teal-600',
+        bgLight: 'hover:bg-teal-600/10',
         text: 'hover:text-teal-300',
         shadow: 'hover:shadow-teal-500/50',
       }
@@ -124,6 +127,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-rose-600',
+        bgLight: 'hover:bg-rose-600/10',
         text: 'hover:text-rose-300',
         shadow: 'hover:shadow-rose-500/50',
       }
@@ -150,6 +154,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-orange-600',
+        bgLight: 'hover:bg-orange-600/10',
         text: 'hover:text-orange-300',
         shadow: 'hover:shadow-orange-500/50',
       }
@@ -176,6 +181,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-yellow-600',
+        bgLight: 'hover:bg-yellow-600/10',
         text: 'hover:text-yellow-300',
         shadow: 'hover:shadow-yellow-500/50',
       }
@@ -202,6 +208,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-blue-600',
+        bgLight: 'hover:bg-blue-600/10',
         text: 'hover:text-blue-300',
         shadow: 'hover:shadow-blue-500/50',
       }
@@ -228,6 +235,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-slate-600',
+        bgLight: 'hover:bg-slate-600/10',
         text: 'hover:text-slate-300',
         shadow: 'hover:shadow-slate-500/50',
       }
@@ -254,6 +262,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-pink-600',
+        bgLight: 'hover:bg-pink-600/10',
         text: 'hover:text-pink-300',
         shadow: 'hover:shadow-pink-500/50',
       }
@@ -280,6 +289,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-stone-600',
+        bgLight: 'hover:bg-stone-600/10',
         text: 'hover:text-stone-300',
         shadow: 'hover:shadow-stone-500/50',
       }
@@ -306,6 +316,7 @@ export const useTheme = () => {
       },
       hover: {
         bg: 'hover:bg-red-600',
+        bgLight: 'hover:bg-red-600/10',
         text: 'hover:text-red-300',
         shadow: 'hover:shadow-red-500/50',
       }

@@ -60,7 +60,7 @@ const AudioCard = ({ track }) => {
             className={`p-3 rounded-full transition-all duration-300 hover:scale-110 ${
               isCurrentTrack 
                 ? `${colorClasses.bg.primary} text-white shadow-lg ${colorClasses.shadow.primary}` 
-                : `bg-white/10 text-white ${colorClasses.hover.bg} ${colorClasses.hover.shadow}`
+                : `bg-white/10 text-white ${colorClasses.hover.bgLight} ${colorClasses.hover.shadow}`
             } backdrop-blur-sm ${getGroupHoverClasses(currentColor)} group-hover:text-white`}
           >
             <FaPlay className="w-4 h-4" />
