@@ -1,0 +1,54 @@
+import { FaPlay, FaMusic } from 'react-icons/fa'
+import { useAudioPlayer } from '../App'
+
+const AudioCard = ({ track }) => {
+  const { playTrack, currentTrack, isPlaying } = useAudioPlayer()
+  
+  const isCurrentTrack = currentTrack?.id === track.id
+
+  const formatDuration = (duration) => {
+    return duration
+  }
+
+  return (
+    <div className={`group relative bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 transition-all duration-300 hover:bg-gray-700/60 hover:scale-105 hover:shadow-xl border border-gray-700/50 ${isCurrentTrack ? 'ring-2 ring-purple-500 bg-purple-900/30' : ''}`}>
+      <div className="flex items-center justify-between">
+        <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap w-[60%]">
+          <h3 className={`font-semibold text-lg mb-1 overflow-hidden text-ellipsis whitespace-nowrap w-[60%] ${isCurrentTrack ? 'text-purple-300' : 'text-white'}`}>
+            {track.name}
+          </h3>
+          <p className="text-gray-400 text-sm flex items-center">
+            <FaMusic className="mr-1" />
+            {formatDuration(track.duration)}
+          </p>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          {isCurrentTrack && isPlaying && (
+            <div className="flex space-x-1">
+              <div className="w-1 h-4 bg-purple-500 animate-pulse"></div>
+              <div className="w-1 h-4 bg-purple-500 animate-pulse" style={{animationDelay: '0.1s'}}></div>
+              <div className="w-1 h-4 bg-purple-500 animate-pulse" style={{animationDelay: '0.2s'}}></div>
+            </div>
+          )}
+          
+          <button
+            onClick={() => playTrack(track)}
+            className={`p-3 rounded-full transition-all duration-300 hover:scale-110 ${
+              isCurrentTrack 
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50' 
+                : 'bg-white/10 text-white hover:bg-purple-600 hover:shadow-lg hover:shadow-purple-500/50'
+            } backdrop-blur-sm group-hover:bg-purple-600 group-hover:text-white`}
+          >
+            <FaPlay className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      
+      {/* Hover overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-pink-600/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+    </div>
+  )
+}
+
+export default AudioCard 
