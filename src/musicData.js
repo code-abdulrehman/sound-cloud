@@ -196,14 +196,14 @@ export const musicData = {
       id: 33,
       name: "Moye More DS Remix",
       duration: "1:42",
-      url: "/src/assets/sounds-folders/songs/Moye more DS remix.mp3",
+      url: "/src/assets/sounds-folders/songs/Moye more DS remix.mp3.mp3",
       discription: "Moye More DS Remix"
     },
     {
       id: 34,
       name: "Larg - ElgitDoda",
       duration: "3:00",
-      url: "/src/assets/sounds-folders/songs/Larg-ElgitDoda-6268500.mp3",
+      url: "/src/assets/sounds-folders/songs/Larg-ElgitDoda-6268500.mp3.mp3",
       discription: "Larg - ElgitDoda"
     },
     {

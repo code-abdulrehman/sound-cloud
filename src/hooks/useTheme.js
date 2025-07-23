@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react'
 
 export const useTheme = () => {
-  const [currentColor, setCurrentColor] = useState('purple')
+  const [currentColor, setCurrentColor] = useState(localStorage.getItem('selectedColor') || 'teal')
 
   useEffect(() => {
     // Load saved color from localStorage
     const savedColor = localStorage.getItem('selectedColor')
     if (savedColor) {
       setCurrentColor(savedColor)
+    }
+    else {
+      setCurrentColor('teal')
     }
 
     // Listen for color changes from ColorSwitcher
