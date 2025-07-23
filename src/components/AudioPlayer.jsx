@@ -29,6 +29,42 @@ const AudioPlayer = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [lastLoadedUrl, setLastLoadedUrl] = useState('')
 
+  // Keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Don't trigger keyboard controls if user is typing in an input/textarea
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return
+
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault()
+          if (currentTrack && !audioError) {
+            togglePlay()
+          }
+          break
+        case 'ArrowRight':
+          e.preventDefault()
+          playNext()
+          break
+        case 'ArrowLeft':
+          e.preventDefault()
+          playPrevious()
+          break
+        case 'ArrowUp':
+          e.preventDefault()
+          setVolume(prev => Math.min(1, prev + 0.1))
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          setVolume(prev => Math.max(0, prev - 0.1))
+          break
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [currentTrack, audioError, togglePlay, playNext, playPrevious, setVolume])
+
   // Audio event handlers
   useEffect(() => {
     const audio = audioRef.current
@@ -312,64 +348,105 @@ const AudioPlayer = () => {
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="text-white font-semibold truncate">{currentTrack.name}</h3>
-                <p className="text-gray-400 text-sm">
-                  {showLoading ? 'Loading...' : audioError ? 'Error loading file' : `${formatTime(currentTime)} / ${formatTime(duration)}`}
+                <p className="text-gray-400 text-sm flex items-center">
+                  {showLoading ? (
+                    <>
+                      <div className="animate-pulse w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
+                      Loading...
+                    </>
+                  ) : audioError ? (
+                    <>
+                      <div className="w-2 h-2 bg-red-400 rounded-full mr-2"></div>
+                      Error loading file
+                    </>
+                  ) : isPlaying ? (
+                    <>
+                      <div className="animate-pulse w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                      {`${formatTime(currentTime)} / ${formatTime(duration)}`}
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full mr-2"></div>
+                      {`${formatTime(currentTime)} / ${formatTime(duration)}`}
+                    </>
+                  )}
                 </p>
               </div>
             </div>
 
             {/* Controls */}
-            <div className="flex items-center md:space-x-6 space-x-2">
+            <div className="flex items-center md:space-x-6 space-x-4">
               <button
                 onClick={playPrevious}
-                className="text-gray-400 hover:text-white transition-colors duration-200 hover:scale-110 transform"
+                className="text-gray-400 hover:text-white transition-colors duration-200 hover:scale-110 transform active:scale-95"
                 disabled={showLoading}
+                title="Previous track (Left Arrow)"
+                aria-label="Previous track"
               >
                 <FaStepBackward className="w-5 h-5" />
               </button>
 
               <button
                 onClick={togglePlay}
-                className={`w-12 h-12 ${colorClasses.bg.gradient} text-white rounded-full flex items-center justify-center hover:scale-110 transform transition-all duration-200 shadow-lg ${colorClasses.hover.shadow} ${(showLoading || audioError) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`w-14 h-14 ${colorClasses.bg.gradient} text-white rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transform transition-all duration-200 shadow-lg ${colorClasses.hover.shadow} ${(showLoading || audioError) ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-2xl'} focus:outline-none focus:ring-4 focus:ring-purple-500/50`}
                 disabled={showLoading || audioError}
+                title={isPlaying ? "Pause (Spacebar)" : "Play (Spacebar)"}
+                aria-label={isPlaying ? "Pause audio" : "Play audio"}
               >
                 {showLoading ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
                 ) : isPlaying ? (
-                  <FaPause className="w-5 h-5" />
+                  <FaPause className="w-6 h-6" />
                 ) : (
-                  <FaPlay className="w-5 h-5 ml-1" />
+                  <FaPlay className="w-6 h-6 ml-0.5" />
                 )}
               </button>
 
               <button
                 onClick={playNext}
-                className="text-gray-400 hover:text-white transition-colors duration-200 hover:scale-110 transform"
+                className="text-gray-400 hover:text-white transition-colors duration-200 hover:scale-110 transform active:scale-95"
                 disabled={showLoading}
+                title="Next track (Right Arrow)"
+                aria-label="Next track"
               >
                 <FaStepForward className="w-5 h-5" />
               </button>
             </div>
 
             {/* Volume control */}
-            <div className="flex items-center md:space-x-3 space-x-1 flex-1 justify-end">
-              <VolumeIcon className="text-gray-400 w-4 h-4" />
+            <div className="flex items-center md:space-x-3 space-x-2 flex-1 justify-end">
+              <button
+                onClick={() => setVolume(volume === 0 ? 1 : 0)}
+                className="text-gray-400 hover:text-white transition-colors duration-200 hover:scale-110 transform active:scale-95"
+                title={`${volume === 0 ? 'Unmute' : 'Mute'} (Up/Down arrows to adjust)`}
+                aria-label={`${volume === 0 ? 'Unmute' : 'Mute'} audio`}
+              >
+                <VolumeIcon className="w-4 h-4" />
+              </button>
               <div 
                 ref={volumeRef}
-                className="md:w-24 w-20 h-1 bg-gray-700 rounded-full cursor-pointer group"
+                className="md:w-24 w-20 h-2 bg-gray-700 rounded-full cursor-pointer group transition-all duration-200"
                 onClick={handleVolumeChange}
+                title="Click to adjust volume or use Up/Down arrow keys"
               >
                 <div 
                   className={`h-full ${colorClasses.bg.gradientLight} rounded-full relative transition-all duration-150`}
                   style={{ width: `${volume * 100}%` }}
                 >
-                  <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-150"></div>
+                  <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg"></div>
                 </div>
               </div>
-              <span className="text-gray-400 text-xs w-8 text-right">
+              <span className="text-gray-400 text-xs w-8 text-right font-mono">
                 {Math.round(volume * 100)}%
               </span>
             </div>
+          </div>
+          
+          {/* Keyboard shortcuts indicator */}
+          <div className="mt-2 text-center">
+            <p className="text-gray-500 text-xs">
+              Keyboard: <span className="text-gray-400">Space</span> play/pause • <span className="text-gray-400">←→</span> prev/next • <span className="text-gray-400">↑↓</span> volume
+            </p>
           </div>
         </div>
       </div>

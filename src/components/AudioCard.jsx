@@ -5,7 +5,7 @@ import { useTheme } from '../hooks/useTheme'
 const AudioCard = ({ track }) => {
   const { playTrack, currentTrack, isPlaying } = useAudioPlayer()
   const { currentColor, colorClasses } = useTheme()
-  
+
   const isCurrentTrack = currentTrack?.id === track.id
 
   const formatDuration = (duration) => {
@@ -13,14 +13,14 @@ const AudioCard = ({ track }) => {
     if (typeof duration === 'string' && duration.includes(':')) {
       return duration
     }
-    
+
     // If duration is in seconds, convert to MM:SS
     if (typeof duration === 'number') {
       const minutes = Math.floor(duration / 60)
       const seconds = Math.floor(duration % 60)
       return `${minutes}:${seconds.toString().padStart(2, '0')}`
     }
-    
+
     // If it's a string that might be seconds
     const numDuration = parseFloat(duration)
     if (!isNaN(numDuration)) {
@@ -28,7 +28,7 @@ const AudioCard = ({ track }) => {
       const seconds = Math.floor(numDuration % 60)
       return `${minutes}:${seconds.toString().padStart(2, '0')}`
     }
-    
+
     // Return as is if we can't parse it
     return duration
   }
@@ -54,33 +54,31 @@ const AudioCard = ({ track }) => {
             {formatDuration(track.duration)}
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {isCurrentTrack && isPlaying && (
             <div className="flex items-center space-x-0.5">
-              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{height: '10px', animationDelay: '0ms', animationDuration: '270ms'}}></div>
-              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{height: '16px', animationDelay: '100ms', animationDuration: '300ms'}}></div>
-              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{height: '10px', animationDelay: '150ms', animationDuration: '400ms'}}></div>
-              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{height: '16px', animationDelay: '200ms', animationDuration: '450ms'}}></div>
-              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{height: '10px', animationDelay: '250ms', animationDuration: '400ms'}}></div>
-              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{height: '16px', animationDelay: '150ms', animationDuration: '450ms'}}></div>
-              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{height: '10px', animationDelay: '100ms', animationDuration: '350ms'}}></div>
-              </div>
+              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{ height: '10px', animationDelay: '0ms', animationDuration: '270ms' }}></div>
+              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{ height: '16px', animationDelay: '100ms', animationDuration: '300ms' }}></div>
+              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{ height: '10px', animationDelay: '150ms', animationDuration: '400ms' }}></div>
+              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{ height: '16px', animationDelay: '200ms', animationDuration: '450ms' }}></div>
+              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{ height: '10px', animationDelay: '250ms', animationDuration: '400ms' }}></div>
+              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{ height: '16px', animationDelay: '150ms', animationDuration: '450ms' }}></div>
+              <div className={`w-0.5 ${colorClasses.bg.primaryLight} animate-bounce`} style={{ height: '10px', animationDelay: '100ms', animationDuration: '350ms' }}></div>
+            </div>
           )}
-          
           <button
             onClick={() => playTrack(track)}
-            className={`p-3 rounded-full transition-all duration-300 hover:scale-110 ${
-              isCurrentTrack 
-                ? `${colorClasses.bg.primary} text-white shadow-lg ${colorClasses.shadow.primary}` 
+            className={`p-3 rounded-full transition-all duration-300 hover:scale-110 ${isCurrentTrack
+                ? `${colorClasses.bg.primary} text-white shadow-lg ${colorClasses.shadow.primary}`
                 : `bg-white/10 text-white ${colorClasses.hover.shadow}`
-            } backdrop-blur-sm group-hover:text-white`}
+              } backdrop-blur-sm group-hover:text-white`}
           >
             <FaPlay className="w-4 h-4" />
           </button>
         </div>
       </div>
-      
+
       {/* Hover overlay */}
       <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={hoverOverlayStyle}></div>
     </div>
