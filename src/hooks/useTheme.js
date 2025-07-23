@@ -45,7 +45,7 @@ export const useTheme = () => {
         primary: 'shadow-purple-500/50',
       },
       hover: {
-        bg: 'hover:bg-purple-600',
+        bg: 'hover:bg-purple-600/10',
         text: 'hover:text-purple-300',
         shadow: 'hover:shadow-purple-500/50',
       }
