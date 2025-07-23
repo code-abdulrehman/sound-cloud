@@ -23,6 +23,7 @@ function App() {
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [uploadedTracks, setUploadedTracks] = useState([])
   const audioRef = useRef(null)
   const { currentColor } = useTheme()
 
@@ -66,7 +67,10 @@ function App() {
   // Save current track to localStorage
   useEffect(() => {
     if (currentTrack && isLoaded) {
-      localStorage.setItem('currentTrack', JSON.stringify(currentTrack))
+      // Don't save uploaded tracks to localStorage as they have blob URLs
+      if (!currentTrack.isUploaded) {
+        localStorage.setItem('currentTrack', JSON.stringify(currentTrack))
+      }
     }
   }, [currentTrack, isLoaded])
 
@@ -110,10 +114,14 @@ function App() {
     setIsPlaying(!isPlaying)
   }
 
+  const getAllTracks = () => {
+    return [...musicData.islamic, ...musicData.songs, ...uploadedTracks]
+  }
+
   const playNext = () => {
     if (!currentTrack) return
     
-    const allTracks = [...musicData.islamic, ...musicData.songs]
+    const allTracks = getAllTracks()
     const currentIndex = allTracks.findIndex(track => track.id === currentTrack.id)
     const nextIndex = (currentIndex + 1) % allTracks.length
     
@@ -123,11 +131,24 @@ function App() {
   const playPrevious = () => {
     if (!currentTrack) return
     
-    const allTracks = [...musicData.islamic, ...musicData.songs]
+    const allTracks = getAllTracks()
     const currentIndex = allTracks.findIndex(track => track.id === currentTrack.id)
     const prevIndex = currentIndex === 0 ? allTracks.length - 1 : currentIndex - 1
     
     playTrack(allTracks[prevIndex])
+  }
+
+  const addUploadedTrack = (track) => {
+    setUploadedTracks(prev => [...prev, track])
+  }
+
+  const removeUploadedTrack = (trackId) => {
+    setUploadedTracks(prev => prev.filter(track => track.id !== trackId))
+    // If the removed track is currently playing, stop it
+    if (currentTrack?.id === trackId) {
+      setCurrentTrack(null)
+      setIsPlaying(false)
+    }
   }
 
   const contextValue = {
@@ -138,6 +159,7 @@ function App() {
     duration,
     isLoaded,
     musicData,
+    uploadedTracks,
     audioRef,
     playTrack,
     togglePlay,
@@ -146,7 +168,9 @@ function App() {
     setVolume,
     setCurrentTime,
     setDuration,
-    setIsPlaying
+    setIsPlaying,
+    addUploadedTrack,
+    removeUploadedTrack
   }
 
   // Inline style for dynamic background using CSS custom properties
