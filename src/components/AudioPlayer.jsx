@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaVolumeUp, FaVolumeDown, FaVolumeMute } from 'react-icons/fa'
 import { useAudioPlayer } from '../App'
+import { useTheme } from '../hooks/useTheme'
 
 const AudioPlayer = () => {
   const {
@@ -9,6 +10,7 @@ const AudioPlayer = () => {
     volume,
     currentTime,
     duration,
+    isLoaded,
     audioRef,
     togglePlay,
     playNext,
@@ -19,51 +21,88 @@ const AudioPlayer = () => {
     setIsPlaying
   } = useAudioPlayer()
 
+  const { currentColor, colorClasses } = useTheme()
   const progressRef = useRef(null)
   const volumeRef = useRef(null)
+  const [hasSetInitialTime, setHasSetInitialTime] = useState(false)
 
   // Audio event handlers
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
+    if (!audio || !currentTrack) return
 
     const handleLoadedMetadata = () => {
       setDuration(audio.duration)
-      // Set saved time when track loads
-      const savedTime = localStorage.getItem('currentTime')
-      if (savedTime) {
-        audio.currentTime = parseFloat(savedTime)
-        setCurrentTime(parseFloat(savedTime))
+      
+      // Set saved time only once when the track loads
+      if (isLoaded && !hasSetInitialTime) {
+        const savedTime = localStorage.getItem('currentTime')
+        if (savedTime && parseFloat(savedTime) > 0) {
+          const timeToSet = parseFloat(savedTime)
+          // Ensure the time is within bounds
+          if (timeToSet < audio.duration) {
+            audio.currentTime = timeToSet
+            setCurrentTime(timeToSet)
+          }
+        }
+        setHasSetInitialTime(true)
       }
     }
 
     const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime)
+      // Only update if we're not seeking
+      if (!audio.seeking) {
+        setCurrentTime(audio.currentTime)
+      }
     }
 
     const handleEnded = () => {
-      // Just stop playing when track ends, don't auto-play next
       setIsPlaying(false)
+      setCurrentTime(0)
+      localStorage.setItem('currentTime', '0')
     }
 
     const handleCanPlay = () => {
-      if (isPlaying) {
-        audio.play().catch(console.error)
+      // Set volume from saved state
+      audio.volume = volume
+      
+      // If the component loads with a saved time and it hasn't been set yet, set it
+      if (isLoaded && !hasSetInitialTime) {
+        const savedTime = localStorage.getItem('currentTime')
+        if (savedTime && parseFloat(savedTime) > 0) {
+          const timeToSet = parseFloat(savedTime)
+          if (timeToSet < audio.duration) {
+            audio.currentTime = timeToSet
+            setCurrentTime(timeToSet)
+          }
+        }
+        setHasSetInitialTime(true)
       }
+    }
+
+    const handleLoadStart = () => {
+      setHasSetInitialTime(false)
     }
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata)
     audio.addEventListener('timeupdate', handleTimeUpdate)
     audio.addEventListener('ended', handleEnded)
     audio.addEventListener('canplay', handleCanPlay)
+    audio.addEventListener('loadstart', handleLoadStart)
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
       audio.removeEventListener('timeupdate', handleTimeUpdate)
       audio.removeEventListener('ended', handleEnded)
       audio.removeEventListener('canplay', handleCanPlay)
+      audio.removeEventListener('loadstart', handleLoadStart)
     }
-  }, [currentTrack, isPlaying, setCurrentTime, setDuration, setIsPlaying])
+  }, [currentTrack, isLoaded, hasSetInitialTime, volume, setCurrentTime, setDuration, setIsPlaying])
+
+  // Reset hasSetInitialTime when track changes
+  useEffect(() => {
+    setHasSetInitialTime(false)
+  }, [currentTrack])
 
   // Play/pause effect
   useEffect(() => {
@@ -71,11 +110,18 @@ const AudioPlayer = () => {
     if (!audio || !currentTrack) return
 
     if (isPlaying) {
-      audio.play().catch(console.error)
+      // Small delay to ensure audio is ready
+      const playPromise = audio.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.error('Error playing audio:', error)
+          setIsPlaying(false)
+        })
+      }
     } else {
       audio.pause()
     }
-  }, [isPlaying, currentTrack])
+  }, [isPlaying, currentTrack, setIsPlaying])
 
   // Volume effect
   useEffect(() => {
@@ -102,6 +148,9 @@ const AudioPlayer = () => {
     
     audio.currentTime = newTime
     setCurrentTime(newTime)
+    
+    // Save the new time immediately when user seeks
+    localStorage.setItem('currentTime', newTime.toString())
   }
 
   const handleVolumeChange = (e) => {
@@ -141,7 +190,7 @@ const AudioPlayer = () => {
             onClick={handleProgressChange}
           >
             <div 
-              className="h-full bg-gradient-to-r from-purple-800/40 to-purple-600 rounded-full relative transition-all duration-150"
+              className={`h-full ${colorClasses.bg.gradientLight} rounded-full relative transition-all duration-150`}
               style={{ width: `${progressPercent}%` }}
             >
               <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-150 shadow-lg"></div>
@@ -151,7 +200,7 @@ const AudioPlayer = () => {
           <div className="flex items-center justify-between">
             {/* Track info */}
             <div className="flex items-center md:space-x-4 space-x-2 flex-1 min-w-0">
-              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 via-gray-900 to-purple-500 rounded-lg flex items-center justify-center">
+              <div className={`w-12 h-12 ${colorClasses.bg.gradient} rounded-lg flex items-center justify-center`}>
                 <span className="text-white font-bold text-lg">
                   {currentTrack.name.charAt(0)}
                 </span>
@@ -175,7 +224,7 @@ const AudioPlayer = () => {
 
               <button
                 onClick={togglePlay}
-                className="w-12 h-12 bg-gradient-to-br from-purple-500 via-gray-900 to-purple-500 text-white rounded-full flex items-center justify-center hover:scale-110 transform transition-all duration-200 shadow-lg hover:shadow-purple-500/50"
+                className={`w-12 h-12 ${colorClasses.bg.gradient} text-white rounded-full flex items-center justify-center hover:scale-110 transform transition-all duration-200 shadow-lg ${colorClasses.hover.shadow}`}
               >
                 {isPlaying ? <FaPause className="w-5 h-5" /> : <FaPlay className="w-5 h-5 ml-1" />}
               </button>
@@ -197,7 +246,7 @@ const AudioPlayer = () => {
                 onClick={handleVolumeChange}
               >
                 <div 
-                  className="h-full bg-gradient-to-r from-purple-800/40 to-purple-600 rounded-full relative transition-all duration-150"
+                  className={`h-full ${colorClasses.bg.gradientLight} rounded-full relative transition-all duration-150`}
                   style={{ width: `${volume * 100}%` }}
                 >
                   <div className="absolute right-0 top-1/2 transform translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-150"></div>
