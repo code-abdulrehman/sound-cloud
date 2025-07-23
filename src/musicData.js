@@ -108,62 +108,7 @@ export const musicData = {
     }
   ],
   songs: [
-    {
-      id: 21,
-      name: "Pasoori - Ali Sethi x Shea Gill",
-      duration: "3:44",
-      url: "/audio/songs/Pasoori - Coke Studio Season 14 - ALI SETHI X SHEA GILL.mp3",
-      discription: "Pasoori - Coke Studio Season 14 - ALI SETHI X SHEA GILL"
-    },
-    {
-      id: 22,
-      name: "Ishq - Faheem Abdullah",
-      duration: "3:48",
-      url: "/audio/songs/Ishq - Faheem Abdullah.mp3",
-      discription: "Ishq - Faheem Abdullah"
-    },
-    {
-      id: 23,
-      name: "Jhol - Coke Studio",
-      duration: "3:12",
-      url: "/audio/songs/Jhol Coke Studio.mp3",
-      discription: "Jhol - Coke Studio"
-    },
-    {
-      id: 24,
-      name: "Blockbuster - Coke Studio",
-      duration: "3:25",
-      url: "/audio/songs/Blockbuster Coke Studio.mp3",
-      discription: "Blockbuster - Coke Studio"
-    },
-    {
-      id: 25,
-      name: "KAKA All Songs",
-      duration: "17:45",
-      url: "/audio/songs/Kaka All Songs.mp3",
-      discription: "KAKA All Songs"
-    },
-    {
-      id: 26,
-      name: "KAKA All Songs (Jukebox 2020)",
-      duration: "22:29",
-      url: "/audio/songs/KAKA_All_Songs___Audio_Jukebox_2020___Keh_Len_De___Temporary_Pyar___Libaas___Tennu_Ni_Khabran___KAKA.mp3",
-      discription: "KAKA All Songs (Jukebox 2020)"
-    },
-    {
-      id: 27,
-      name: "KAKA Best Songs 2023",
-      duration: "12:03",
-      url: "/audio/songs/KAKA BEST SONGS 2023.mp3",
-      discription: "KAKA Best Songs 2023"
-    },
-    {
-      id: 28,
-      name: "Mere Warga - Kaka",
-      duration: "3:25",
-      url: "/audio/songs/Mere Warga kaka.mp3",
-      discription: "Mere Warga - Kaka"
-    },
+
     {
       id: 29,
       name: "Dream of Us",
