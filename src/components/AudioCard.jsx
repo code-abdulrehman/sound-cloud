@@ -17,9 +17,6 @@ const AudioCard = ({ track }) => {
     background: `rgb(var(--current-color-900, 88 28 135) / 0.3)`
   } : {}
 
-  const hoverOverlayStyle = {
-    background: `linear-gradient(to right, rgb(var(--current-color-600, 147 51 234) / 0.1), rgb(219 39 119 / 0.1))`
-  }
 
   return (
     <div className={`group relative bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 transition-all duration-300 hover:bg-gray-700/60 hover:scale-105 hover:shadow-xl border border-gray-700/50 ${isCurrentTrack ? `${colorClasses.border.ring} ring-2` : ''}`} style={currentTrackStyle}>
@@ -61,7 +58,7 @@ const AudioCard = ({ track }) => {
       </div>
       
       {/* Hover overlay */}
-      <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={hoverOverlayStyle}></div>
+      <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none drop-blur-sm"></div>
     </div>
   )
 }
