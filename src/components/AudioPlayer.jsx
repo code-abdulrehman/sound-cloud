@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaVolumeUp, FaVolumeDown, FaVolumeMute } from 'react-icons/fa'
+import { FaPlay, FaPause, FaStepForward, FaStepBackward, FaVolumeUp, FaVolumeDown, FaVolumeMute, FaExclamationTriangle } from 'react-icons/fa'
 import { useAudioPlayer } from '../App'
 import { useTheme } from '../hooks/useTheme'
 
@@ -25,14 +25,27 @@ const AudioPlayer = () => {
   const progressRef = useRef(null)
   const volumeRef = useRef(null)
   const [hasSetInitialTime, setHasSetInitialTime] = useState(false)
+  const [audioError, setAudioError] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [lastLoadedUrl, setLastLoadedUrl] = useState('')
 
   // Audio event handlers
   useEffect(() => {
     const audio = audioRef.current
     if (!audio || !currentTrack) return
 
+    // Check if this is actually a new track by comparing URLs
+    const isNewTrack = audio.src !== currentTrack.url && lastLoadedUrl !== currentTrack.url
+    
+    if (isNewTrack) {
+      setAudioError(null)
+      setIsLoading(true)
+    }
+
     const handleLoadedMetadata = () => {
       setDuration(audio.duration)
+      setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
       
       // Set saved time only once when the track loads
       if (isLoaded && !hasSetInitialTime) {
@@ -65,6 +78,8 @@ const AudioPlayer = () => {
     const handleCanPlay = () => {
       // Set volume from saved state
       audio.volume = volume
+      setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
       
       // If the component loads with a saved time and it hasn't been set yet, set it
       if (isLoaded && !hasSetInitialTime) {
@@ -81,7 +96,52 @@ const AudioPlayer = () => {
     }
 
     const handleLoadStart = () => {
-      setHasSetInitialTime(false)
+      // Only show loading for genuinely new tracks
+      if (isNewTrack) {
+        setHasSetInitialTime(false)
+        setIsLoading(true)
+        setAudioError(null)
+      }
+    }
+
+    const handleError = (e) => {
+      console.error('Audio loading error:', e)
+      setIsLoading(false)
+      setIsPlaying(false)
+      setAudioError(`Failed to load audio file: ${currentTrack.name}`)
+    }
+
+    const handleLoadedData = () => {
+      setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
+    }
+
+    const handlePlaying = () => {
+      // Audio is actually playing, clear loading state
+      setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
+    }
+
+    const handleWaiting = () => {
+      // Only show loading if this is genuinely a new track
+      if (isNewTrack) {
+        setIsLoading(true)
+      }
+    }
+
+    const handleCanPlayThrough = () => {
+      // Audio can play through without buffering
+      setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
+    }
+
+    // If the audio is already loaded and ready, don't show loading
+    if (audio.readyState >= 1 && audio.src === currentTrack.url) {
+      setIsLoading(false)
+      setLastLoadedUrl(currentTrack.url)
+      if (audio.duration) {
+        setDuration(audio.duration)
+      }
     }
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata)
@@ -89,6 +149,11 @@ const AudioPlayer = () => {
     audio.addEventListener('ended', handleEnded)
     audio.addEventListener('canplay', handleCanPlay)
     audio.addEventListener('loadstart', handleLoadStart)
+    audio.addEventListener('error', handleError)
+    audio.addEventListener('loadeddata', handleLoadedData)
+    audio.addEventListener('playing', handlePlaying)
+    audio.addEventListener('waiting', handleWaiting)
+    audio.addEventListener('canplaythrough', handleCanPlayThrough)
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
@@ -96,32 +161,46 @@ const AudioPlayer = () => {
       audio.removeEventListener('ended', handleEnded)
       audio.removeEventListener('canplay', handleCanPlay)
       audio.removeEventListener('loadstart', handleLoadStart)
+      audio.removeEventListener('error', handleError)
+      audio.removeEventListener('loadeddata', handleLoadedData)
+      audio.removeEventListener('playing', handlePlaying)
+      audio.removeEventListener('waiting', handleWaiting)
+      audio.removeEventListener('canplaythrough', handleCanPlayThrough)
     }
-  }, [currentTrack, isLoaded, hasSetInitialTime, volume, setCurrentTime, setDuration, setIsPlaying])
+  }, [currentTrack, isLoaded, hasSetInitialTime, volume, setCurrentTime, setDuration, setIsPlaying, lastLoadedUrl])
 
   // Reset hasSetInitialTime when track changes
   useEffect(() => {
-    setHasSetInitialTime(false)
-  }, [currentTrack])
+    if (currentTrack && lastLoadedUrl !== currentTrack.url) {
+      setHasSetInitialTime(false)
+    }
+  }, [currentTrack, lastLoadedUrl])
 
   // Play/pause effect
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio || !currentTrack) return
+    if (!audio || !currentTrack || audioError) return
 
     if (isPlaying) {
-      // Small delay to ensure audio is ready
+      // Don't show loading when just resuming playback
       const playPromise = audio.play()
       if (playPromise !== undefined) {
-        playPromise.catch(error => {
+        playPromise.then(() => {
+          // Successfully started playing - clear any lingering loading state
+          setIsLoading(false)
+          setLastLoadedUrl(currentTrack.url)
+        }).catch(error => {
           console.error('Error playing audio:', error)
           setIsPlaying(false)
+          setIsLoading(false)
+          setAudioError(`Playback failed: ${error.message}`)
         })
       }
     } else {
       audio.pause()
+      // Don't set loading when just pausing
     }
-  }, [isPlaying, currentTrack, setIsPlaying])
+  }, [isPlaying, currentTrack, audioError, setIsPlaying])
 
   // Volume effect
   useEffect(() => {
@@ -140,7 +219,7 @@ const AudioPlayer = () => {
 
   const handleProgressChange = (e) => {
     const audio = audioRef.current
-    if (!audio || !duration) return
+    if (!audio || !duration || audioError) return
 
     const rect = progressRef.current.getBoundingClientRect()
     const percent = (e.clientX - rect.left) / rect.width
@@ -170,6 +249,9 @@ const AudioPlayer = () => {
   if (!currentTrack) return null
 
   const progressPercent = duration ? (currentTime / duration) * 100 : 0
+  
+  // Show loading only when genuinely loading a new track
+  const showLoading = isLoading && (!lastLoadedUrl || lastLoadedUrl !== currentTrack.url)
 
   return (
     <>
@@ -183,6 +265,23 @@ const AudioPlayer = () => {
       {/* Fixed player at bottom */}
       <div className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-t border-gray-700/50 shadow-2xl z-50">
         <div className="container mx-auto px-4 py-4">
+          {/* Error message */}
+          {audioError && (
+            <div className="bg-red-900/50 border border-red-500/50 rounded-lg p-3 mb-4 flex items-center">
+              <FaExclamationTriangle className="text-red-400 mr-2" />
+              <span className="text-red-200 text-sm">{audioError}</span>
+              <button 
+                onClick={() => {
+                  setAudioError(null)
+                  playNext()
+                }}
+                className="ml-auto text-red-400 hover:text-red-300 text-sm"
+              >
+                Skip Track
+              </button>
+            </div>
+          )}
+
           {/* Progress bar */}
           <div 
             ref={progressRef}
@@ -200,15 +299,21 @@ const AudioPlayer = () => {
           <div className="flex items-center justify-between">
             {/* Track info */}
             <div className="flex items-center md:space-x-4 space-x-2 flex-1 min-w-0">
-              <div className={`w-12 h-12 ${colorClasses.bg.gradient} rounded-lg flex items-center justify-center`}>
-                <span className="text-white font-bold text-lg">
-                  {currentTrack.name.charAt(0)}
-                </span>
+              <div className={`w-12 h-12 ${colorClasses.bg.gradient} rounded-lg flex items-center justify-center relative`}>
+                {showLoading ? (
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent"></div>
+                ) : audioError ? (
+                  <FaExclamationTriangle className="text-white text-lg" />
+                ) : (
+                  <span className="text-white font-bold text-lg">
+                    {currentTrack.name.charAt(0)}
+                  </span>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="text-white font-semibold truncate">{currentTrack.name}</h3>
                 <p className="text-gray-400 text-sm">
-                  {formatTime(currentTime)} / {formatTime(duration)}
+                  {showLoading ? 'Loading...' : audioError ? 'Error loading file' : `${formatTime(currentTime)} / ${formatTime(duration)}`}
                 </p>
               </div>
             </div>
@@ -218,20 +323,29 @@ const AudioPlayer = () => {
               <button
                 onClick={playPrevious}
                 className="text-gray-400 hover:text-white transition-colors duration-200 hover:scale-110 transform"
+                disabled={showLoading}
               >
                 <FaStepBackward className="w-5 h-5" />
               </button>
 
               <button
                 onClick={togglePlay}
-                className={`w-12 h-12 ${colorClasses.bg.gradient} text-white rounded-full flex items-center justify-center hover:scale-110 transform transition-all duration-200 shadow-lg ${colorClasses.hover.shadow}`}
+                className={`w-12 h-12 ${colorClasses.bg.gradient} text-white rounded-full flex items-center justify-center hover:scale-110 transform transition-all duration-200 shadow-lg ${colorClasses.hover.shadow} ${(showLoading || audioError) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={showLoading || audioError}
               >
-                {isPlaying ? <FaPause className="w-5 h-5" /> : <FaPlay className="w-5 h-5 ml-1" />}
+                {showLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                ) : isPlaying ? (
+                  <FaPause className="w-5 h-5" />
+                ) : (
+                  <FaPlay className="w-5 h-5 ml-1" />
+                )}
               </button>
 
               <button
                 onClick={playNext}
                 className="text-gray-400 hover:text-white transition-colors duration-200 hover:scale-110 transform"
+                disabled={showLoading}
               >
                 <FaStepForward className="w-5 h-5" />
               </button>

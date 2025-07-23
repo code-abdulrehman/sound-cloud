@@ -9,28 +9,41 @@ const AudioCard = ({ track }) => {
   const isCurrentTrack = currentTrack?.id === track.id
 
   const formatDuration = (duration) => {
+    // If duration is already in MM:SS format, return as is
+    if (typeof duration === 'string' && duration.includes(':')) {
+      return duration
+    }
+    
+    // If duration is in seconds, convert to MM:SS
+    if (typeof duration === 'number') {
+      const minutes = Math.floor(duration / 60)
+      const seconds = Math.floor(duration % 60)
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+    
+    // If it's a string that might be seconds
+    const numDuration = parseFloat(duration)
+    if (!isNaN(numDuration)) {
+      const minutes = Math.floor(numDuration / 60)
+      const seconds = Math.floor(numDuration % 60)
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+    
+    // Return as is if we can't parse it
     return duration
   }
 
-  const getGroupHoverClasses = (colorName) => {
-    switch (colorName) {
-      case 'emerald': return 'group-hover:bg-emerald-600'
-      case 'teal': return 'group-hover:bg-teal-600'
-      case 'rose': return 'group-hover:bg-rose-600'
-      case 'orange': return 'group-hover:bg-orange-600'
-      case 'yellow': return 'group-hover:bg-yellow-600'
-      case 'blue': return 'group-hover:bg-blue-600'
-      case 'purple': return 'group-hover:bg-purple-600'
-      case 'slate': return 'group-hover:bg-slate-600'
-      case 'pink': return 'group-hover:bg-pink-600'
-      case 'stone': return 'group-hover:bg-stone-600'
-      case 'red': return 'group-hover:bg-red-600'
-      default: return 'group-hover:bg-purple-600'
-    }
+  // Inline styles for dynamic classes that might not work in production
+  const currentTrackStyle = isCurrentTrack ? {
+    background: `rgb(var(--current-color-900, 88 28 135) / 0.3)`
+  } : {}
+
+  const hoverOverlayStyle = {
+    background: `linear-gradient(to right, rgb(var(--current-color-600, 147 51 234) / 0.1), rgb(219 39 119 / 0.1))`
   }
 
   return (
-    <div className={`group relative bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 transition-all duration-300 hover:bg-gray-700/60 hover:scale-105 hover:shadow-xl border border-gray-700/50 ${isCurrentTrack ? `${colorClasses.border.ring} ring-2 bg-${currentColor}-900/30` : ''}`}>
+    <div className={`group relative bg-gray-800/50 backdrop-blur-sm rounded-lg p-4 transition-all duration-300 hover:bg-gray-700/60 hover:scale-105 hover:shadow-xl border border-gray-700/50 ${isCurrentTrack ? `${colorClasses.border.ring} ring-2` : ''}`} style={currentTrackStyle}>
       <div className="flex items-center justify-between" data-meta={track.discription}>
         <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap w-[60%]">
           <h3 className={`font-semibold text-lg mb-1 overflow-hidden text-ellipsis whitespace-nowrap w-[60%] ${isCurrentTrack ? colorClasses.text.primaryLight : 'text-white'}`}>
@@ -60,8 +73,8 @@ const AudioCard = ({ track }) => {
             className={`p-3 rounded-full transition-all duration-300 hover:scale-110 ${
               isCurrentTrack 
                 ? `${colorClasses.bg.primary} text-white shadow-lg ${colorClasses.shadow.primary}` 
-                : `bg-white/10 text-white ${colorClasses.hover.bg} ${colorClasses.hover.shadow}`
-            } backdrop-blur-sm ${getGroupHoverClasses(currentColor)} group-hover:text-white`}
+                : `bg-white/10 text-white ${colorClasses.hover.shadow}`
+            } backdrop-blur-sm group-hover:text-white`}
           >
             <FaPlay className="w-4 h-4" />
           </button>
@@ -69,7 +82,7 @@ const AudioCard = ({ track }) => {
       </div>
       
       {/* Hover overlay */}
-      <div className={`absolute inset-0 bg-gradient-to-r from-${currentColor}-600/10 to-pink-600/10 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`}></div>
+      <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={hoverOverlayStyle}></div>
     </div>
   )
 }
