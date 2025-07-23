@@ -14,18 +14,18 @@ const AudioCard = ({ track }) => {
 
   const getGroupHoverClasses = (colorName) => {
     switch (colorName) {
-      case 'emerald': return 'group-hover:bg-emerald-600'
-      case 'teal': return 'group-hover:bg-teal-600'
-      case 'rose': return 'group-hover:bg-rose-600'
-      case 'orange': return 'group-hover:bg-orange-600'
-      case 'yellow': return 'group-hover:bg-yellow-600'
-      case 'blue': return 'group-hover:bg-blue-600'
-      case 'purple': return 'group-hover:bg-purple-600'
-      case 'slate': return 'group-hover:bg-slate-600'
-      case 'pink': return 'group-hover:bg-pink-600'
-      case 'stone': return 'group-hover:bg-stone-600'
-      case 'red': return 'group-hover:bg-red-600'
-      default: return 'group-hover:bg-purple-600'
+      case 'emerald': return 'group-hover:bg-emerald-600/10'
+      case 'teal': return 'group-hover:bg-teal-600/10'
+      case 'rose': return 'group-hover:bg-rose-600/10'
+      case 'orange': return 'group-hover:bg-orange-600/10'
+      case 'yellow': return 'group-hover:bg-yellow-600/10'
+      case 'blue': return 'group-hover:bg-blue-600/10'
+      case 'purple': return 'group-hover:bg-purple-600/10'
+      case 'slate': return 'group-hover:bg-slate-600/10'
+      case 'pink': return 'group-hover:bg-pink-600/10'
+      case 'stone': return 'group-hover:bg-stone-600/10'
+      case 'red': return 'group-hover:bg-red-600/10'
+      default: return 'group-hover:bg-purple-600/10'
     }
   }
 
