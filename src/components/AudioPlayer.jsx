@@ -414,7 +414,7 @@ const AudioPlayer = () => {
             </div>
 
             {/* Volume control */}
-            <div className="flex items-center md:space-x-3 space-x-2 flex-1 justify-end">
+            <div className="hidden md:flex items-center md:space-x-3 space-x-2 flex-1 justify-end">
               <button
                 onClick={() => setVolume(volume === 0 ? 1 : 0)}
                 className="text-gray-400 hover:text-white transition-colors duration-200 hover:scale-110 transform active:scale-95"
@@ -443,7 +443,7 @@ const AudioPlayer = () => {
           </div>
           
           {/* Keyboard shortcuts indicator */}
-          <div className="mt-2 text-center">
+          <div className="mt-2 text-center hidden md:block">
             <p className="text-gray-500 text-xs">
               Keyboard: <span className="text-gray-400">Space</span> play/pause • <span className="text-gray-400">←→</span> prev/next • <span className="text-gray-400">↑↓</span> volume
             </p>
